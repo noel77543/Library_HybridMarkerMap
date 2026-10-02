@@ -11,6 +11,10 @@
 
 另外內建統一的點擊事件，被選取的 marker 會放大 1.5 倍，再選其他 marker 時自動還原。
 
+<p align="center">
+  <img src="docs/demo.gif" width="300" alt="demo：點擊群組拉近並展開、選取標記放大、切換五種地圖樣式">
+</p>
+
 ## 專案結構
 
 ```
