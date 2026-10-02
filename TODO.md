@@ -19,9 +19,9 @@
   - [ ] 建立 GPG 金鑰並上傳公鑰到 keyserver
   - [ ] 設定 `~/.gradle/gradle.properties` 後執行 `publishToMavenCentral`，到 Central Portal 按 Publish
 
-- [ ] **自動化測試與 demo GIF**
+- [x] **自動化測試與 demo GIF**
   - [x] 2026-10-02 lib 單元測試 17 個、demo 實機測試 3 個、GitHub Actions CI
-  - [ ] demo GIF（錄影途中手機斷線，待重新連線後錄製）
+  - [x] 2026-10-02 demo GIF（`docs/demo.gif`，放在 README 開頭）
   補上單元測試與 CI；README 第一屏放 GIF。使用者打開 README 的前 5 秒就決定要不要繼續看。
 
 - [x] **確認地圖樣式的長期方案**（2026-10-02 確認，維持 JSON 樣式）
