@@ -26,6 +26,11 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+
+    testOptions {
+        // 單元測試在 JVM 上執行，android.* 的方法回傳預設值而非拋出例外
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -33,6 +38,8 @@ dependencies {
     api(libs.play.services.maps)
     api(libs.maps.utils)
     testImplementation(libs.junit)
+    // 驗證地圖樣式 JSON 格式
+    testImplementation(libs.gson)
 }
 
 // 發布至 Maven Central，帳號與簽章金鑰設定於 ~/.gradle/gradle.properties，見 README「發布」

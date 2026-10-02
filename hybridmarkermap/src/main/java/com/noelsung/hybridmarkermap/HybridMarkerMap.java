@@ -2,7 +2,6 @@ package com.noelsung.hybridmarkermap;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.location.Location;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -16,7 +15,6 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.VisibleRegion;
 import com.google.maps.android.clustering.ClusterManager;
 import com.google.maps.android.collections.MarkerManager;
 import com.noelsung.hybridmarkermap.model.ClusterableMarker;
@@ -26,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -311,55 +308,44 @@ public class HybridMarkerMap<C, S> {
      * 依據鏡頭位置 新增可視範圍內、回收可視範圍外的 不可群組化之marker
      */
     private void refreshStandaloneMarkers() {
-        LatLng center = googleMap.getCameraPosition().target;
-        double radius = getCameraRadius();
-        float[] distance = new float[1];
+        //目前已繪製的項目 <ID, 繪製時所用的項目>
+        Map<String, StandaloneMarker<S>> visibleItems = new HashMap<>();
+        for (Map.Entry<String, Marker> entry : visibleStandaloneMarkers.entrySet()) {
+            visibleItems.put(entry.getKey(), getStandaloneItem(entry.getValue()));
+        }
+        StandaloneCuller.Plan<S> plan = StandaloneCuller.plan(
+                googleMap.getCameraPosition().target,
+                StandaloneCuller.radiusOf(googleMap.getProjection().getVisibleRegion()),
+                standaloneMarkerMap, visibleItems, maxVisibleStandaloneCount);
 
-        //回收已不在資料中的marker
-        Iterator<Map.Entry<String, Marker>> iterator = visibleStandaloneMarkers.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, Marker> entry = iterator.next();
-            if (!standaloneMarkerMap.containsKey(entry.getKey())) {
-                removeStandaloneMarker(entry.getValue());
-                iterator.remove();
-            }
+        //回收已不在資料中、或已移出可視範圍的marker
+        for (String id : plan.toRemove) {
+            removeStandaloneMarker(visibleStandaloneMarkers.remove(id));
         }
 
-        for (StandaloneMarker<S> item : standaloneMarkerMap.values()) {
-            LatLng position = item.getPosition();
-            Location.distanceBetween(center.latitude, center.longitude, position.latitude, position.longitude, distance);
-            Marker marker = visibleStandaloneMarkers.get(item.getId());
-
-            if (distance[0] < radius) {
-                if (marker == null) {
-                    if (visibleStandaloneMarkers.size() >= maxVisibleStandaloneCount) {
-                        continue;
-                    }
-                    MarkerOptions markerOptions = new MarkerOptions()
-                            .position(position)
-                            .anchor(standaloneAnchorU, standaloneAnchorV);
-                    Bitmap bitmap = getStandaloneIcon(item);
-                    if (bitmap != null) {
-                        markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
-                    }
-                    marker = standaloneCollection.addMarker(markerOptions);
-                    marker.setTag(item);
-                    visibleStandaloneMarkers.put(item.getId(), marker);
-                }
-                //同一個ID的資料被替換 更新既有的marker
-                else if (marker.getTag() != item) {
-                    boolean isSelected = marker.equals(selectedMarker);
-                    if (isSelected) {
-                        selectedStandalone = item;
-                    }
-                    marker.setTag(item);
-                    marker.setPosition(position);
-                    applyIcon(marker, getStandaloneIcon(item), isSelected);
-                }
-            } else if (marker != null) {
-                removeStandaloneMarker(marker);
-                visibleStandaloneMarkers.remove(item.getId());
+        for (StandaloneMarker<S> item : plan.toAdd) {
+            MarkerOptions markerOptions = new MarkerOptions()
+                    .position(item.getPosition())
+                    .anchor(standaloneAnchorU, standaloneAnchorV);
+            Bitmap bitmap = getStandaloneIcon(item);
+            if (bitmap != null) {
+                markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
             }
+            Marker marker = standaloneCollection.addMarker(markerOptions);
+            marker.setTag(item);
+            visibleStandaloneMarkers.put(item.getId(), marker);
+        }
+
+        //同一個ID的資料被替換 更新既有的marker
+        for (StandaloneMarker<S> item : plan.toUpdate) {
+            Marker marker = visibleStandaloneMarkers.get(item.getId());
+            boolean isSelected = marker.equals(selectedMarker);
+            if (isSelected) {
+                selectedStandalone = item;
+            }
+            marker.setTag(item);
+            marker.setPosition(item.getPosition());
+            applyIcon(marker, getStandaloneIcon(item), isSelected);
         }
     }
 
@@ -383,45 +369,6 @@ public class HybridMarkerMap<C, S> {
             clearSelectionState();
         }
         standaloneCollection.remove(marker);
-    }
-
-    //----------
-
-    /***
-     * 以mapview中心點為圓心 , 圓心與右上角距離為半徑
-     * @return 單位 公尺
-     */
-    private double getCameraRadius() {
-        VisibleRegion visibleRegion = googleMap.getProjection().getVisibleRegion();
-
-        float[] distanceWidth = new float[1];
-        float[] distanceHeight = new float[1];
-
-        LatLng latLngFarRight = visibleRegion.farRight;
-        LatLng latLngFarLeft = visibleRegion.farLeft;
-        LatLng latLngNearRight = visibleRegion.nearRight;
-        LatLng latLngNearLeft = visibleRegion.nearLeft;
-
-        //distanceWidth 取得鏡頭左至右的直線距離
-        Location.distanceBetween(
-                (latLngFarLeft.latitude + latLngNearLeft.latitude) / 2,
-                latLngFarLeft.longitude,
-                (latLngFarRight.latitude + latLngNearRight.latitude) / 2,
-                latLngFarRight.longitude,
-                distanceWidth
-        );
-
-        //distanceHeight 取得鏡頭上至下的直線距離
-        Location.distanceBetween(
-                latLngFarRight.latitude,
-                (latLngFarRight.longitude + latLngFarLeft.longitude) / 2,
-                latLngNearRight.latitude,
-                (latLngNearRight.longitude + latLngNearLeft.longitude) / 2,
-                distanceHeight
-        );
-
-        //將寬高都除以二後取得 鏡頭中心點至上或下的距離 以及 鏡頭中心點至左或右的距離   接著用畢氏定理得解第三邊即為半徑
-        return Math.sqrt(Math.pow(distanceWidth[0], 2) + Math.pow(distanceHeight[0], 2)) / 2;
     }
 
     //---------

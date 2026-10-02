@@ -1,5 +1,7 @@
 # HybridMarkerMap
 
+[![CI](https://github.com/noel77543/Library_HybridMarkerMap/actions/workflows/ci.yml/badge.svg)](https://github.com/noel77543/Library_HybridMarkerMap/actions/workflows/ci.yml)
+
 在同一張 Google Map 上同時管理兩種標記的 Android library：
 
 | 類型 | Model | 行為 |
@@ -125,6 +127,15 @@ demo 資料位於 `app/src/main/assets`，格式為 `{id, name, lat, lng, status
 - `sample_standalone.json`：不可群組化項目，`status` 大於 0 視為啟用
 
 畫面上方可以切換五種地圖樣式。
+
+## 測試
+
+| 指令 | 內容 | 執行環境 |
+|---|---|---|
+| `./gradlew :hybridmarkermap:testDebugUnitTest` | lib 單元測試：可視範圍裁切、地圖樣式 JSON、標記模型 | JVM，不需裝置 |
+| `./gradlew :app:connectedDebugAndroidTest` | demo 實機測試：地圖載入、群組計算、樣式切換 | 需連接裝置，並在 `local.properties` 設定 `MAPS_API_KEY` |
+
+每次 push 與 pull request 會由 [GitHub Actions](.github/workflows/ci.yml) 執行單元測試、lint 與建置；實機測試需要裝置與 API key，不在 CI 執行。
 
 ## 發布
 
