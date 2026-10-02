@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 可群組化項目標記的主體，程式中依狀態著色 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="30dp"
+    android:height="36dp"
+    android:viewportWidth="30"
+    android:viewportHeight="36">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M15,1C7.3,1 1,7.1 1,14.8C1,25.4 15,35 15,35S29,25.4 29,14.8C29,7.1 22.7,1 15,1Z" />
+</vector>

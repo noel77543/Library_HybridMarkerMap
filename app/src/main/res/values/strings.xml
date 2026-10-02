@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">HybridMarkerMap Demo</string>
+    <string name="status_unclustered">展開中的可群組化項目：%1$d</string>
+    <string name="status_cluster_click">點擊群組：共 %1$d 個項目</string>
+    <string name="status_clusterable_click">可群組化項目：%1$s（狀態 %2$d）</string>
+    <string name="status_standalone_click">獨立項目：%1$s（數值 %2$d）</string>
+
+    <string name="map_style_default">預設</string>
+    <string name="map_style_grayscale">灰階</string>
+    <string name="map_style_night">夜間</string>
+    <string name="map_style_retro">復古</string>
+    <string name="map_style_minimal">極簡</string>
+</resources>
