@@ -14,7 +14,7 @@
   JitPack 信任度較低，許多公司專案只接受 Maven Central 上的套件。
   2026-10-02 建置設定完成：座標 `io.github.noel77543:hybridmarkermap:0.1.0`、Apache 2.0、POM／sources／javadoc 齊全，本機發布已驗證。
   剩下需要本人操作的步驟（見 README「發布」）：
-  - [ ] 建立 GitHub repo `noel77543/Library_HybridMarkerMap` 並推上程式碼（POM 的 url／scm 指向此處）
+  - [x] 建立 GitHub repo `noel77543/Library_HybridMarkerMap` 並推上程式碼（POM 的 url／scm 指向此處）
   - [ ] 以 GitHub 帳號登入 Central Portal、產生 User Token
   - [ ] 建立 GPG 金鑰並上傳公鑰到 keyserver
   - [ ] 設定 `~/.gradle/gradle.properties` 後執行 `publishToMavenCentral`，到 Central Portal 按 Publish
